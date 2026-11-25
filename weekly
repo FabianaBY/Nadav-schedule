@@ -1,0 +1,406 @@
+<!-- ... existing code ... -->
+                    <div class="flex flex-wrap items-center justify-between gap-3 pt-1">
+                        <div class="flex items-center gap-2 text-xs text-slate-500">
+                            <i data-lucide="info" class="w-4 h-4 text-slate-400 shrink-0"></i>
+                            <span>הגעה: <strong>חצי שעה</strong> לפני אימון רגיל • <strong>רבע שעה</strong> לפני אימון כושר.</span>
+                        </div>
+                        <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+<!-- ... existing code ... -->
+                    <div class="flex items-center gap-1.5 bg-orange-50 border border-orange-200 px-2.5 py-1 rounded-lg">
+                        <span class="w-3 h-3 rounded-full bg-orange-500 inline-block"></span>
+                        <span class="text-xs font-bold text-orange-900">שנתון 2011</span>
+                    </div>
+
+                    <div class="flex items-center gap-1.5 bg-purple-50 border border-purple-200 px-2.5 py-1 rounded-lg">
+                        <span class="w-3 h-3 rounded-full bg-purple-600 inline-block"></span>
+                        <span class="text-xs font-bold text-purple-900">פתח תקווה</span>
+                    </div>
+
+                    <div class="flex items-center gap-1.5 bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-lg">
+                        <span class="w-3 h-3 rounded-full bg-slate-400 inline-block"></span>
+                        <span class="text-xs font-medium text-slate-700">כללי / לא צוין</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- סיכום מהיר / פילטר שנתונים + בורר תצוגה (גריד / רשימה) -->
+            <div class="flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-center gap-2 flex-wrap">
+                    <div class="flex items-center gap-1.5 bg-white p-1 rounded-xl border border-slate-200 shadow-2xs flex-wrap">
+                        <button onclick="setFilter('all')" id="filter-all" class="filter-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-white transition">הכל (<span id="count-all">0</span>)</button>
+                        <button onclick="setFilter('2010')" id="filter-2010" class="filter-btn px-3 py-1.5 rounded-lg text-xs font-bold text-blue-700 hover:bg-blue-50 transition">🔵 2010 (<span id="count-2010">0</span>)</button>
+                        <button onclick="setFilter('2011')" id="filter-2011" class="filter-btn px-3 py-1.5 rounded-lg text-xs font-bold text-orange-700 hover:bg-orange-50 transition">🟠 2011 (<span id="count-2011">0</span>)</button>
+                        <button onclick="setFilter('pt')" id="filter-pt" class="filter-btn px-3 py-1.5 rounded-lg text-xs font-bold text-purple-700 hover:bg-purple-50 transition">🟣 פתח תקווה (<span id="count-pt">0</span>)</button>
+                    </div>
+<!-- ... existing code ... -->
+                <div class="text-xs text-slate-500 flex items-center gap-1.5">
+                    <i data-lucide="clock" class="w-3.5 h-3.5 text-amber-600"></i>
+                    <span>הגעה: <strong>30 דק' לפני</strong> (ובאימון כושר <strong>15 דק' לפני</strong>)</span>
+                </div>
+            </div>
+<!-- ... existing code ... -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">שנתון / קבוצה</label>
+                        <select id="edit-cohort" class="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm font-bold bg-white focus:ring-2 focus:ring-emerald-500 outline-none">
+                            <option value="2010">🔵 שנתון 2010</option>
+                            <option value="2011">🟠 שנתון 2011</option>
+                            <option value="pt">🟣 פתח תקווה</option>
+                            <option value="general">⚪ כללי / משותף</option>
+                        </select>
+                    </div>
+                </div>
+<!-- ... existing code ... -->
+                <div class="bg-amber-50 border border-amber-200 rounded-xl px-3.5 py-2 flex items-center justify-between text-xs">
+                    <span id="modal-arrival-label" class="font-semibold text-amber-900">⏰ שעת הגעה מומלצת (חצי שעה לפני):</span>
+                    <span id="modal-arrival-preview" class="font-extrabold text-amber-950 text-sm">--:--</span>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">מיקום / מגרש</label>
+                    <input type="text" id="edit-location" required placeholder="למשל: מגרש סינטטי / אצטדיון עירוני"
+                        class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm bg-white focus:ring-2 focus:ring-emerald-500 outline-none">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">סוג פעילות</label>
+                        <input type="text" id="edit-type" placeholder="אימון / אימון כושר / משחק" value="אימון" oninput="updateModalArrivalPreview()"
+                            class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-emerald-500 outline-none">
+                    </div>
+<!-- ... existing code ... -->
+        function addMinutesToTime(timeStr, deltaMinutes) {
+            return minutesToTime(timeToMinutes(timeStr) + deltaMinutes);
+        }
+
+        function isFitnessActivity(activityType = '', location = '', note = '') {
+            const combined = `${activityType} ${location} ${note}`;
+            return /כושר/.test(combined);
+        }
+
+        function getArrivalOffsetMinutes(activityType = '', location = '', note = '') {
+            return isFitnessActivity(activityType, location, note) ? 15 : 30;
+        }
+
+        function calculateArrivalTime(startTime, activityType = '', location = '', note = '') {
+            const offset = getArrivalOffsetMinutes(activityType, location, note);
+            return addMinutesToTime(startTime, -offset);
+        }
+
+        function calculateDefaultEndTime(startTime) {
+            return addMinutesToTime(startTime, 90);
+        }
+
+        function detectGroupCohort(text) {
+            if (/\b2010\b/.test(text)) return '2010';
+            if (/\b2011\b/.test(text)) return '2011';
+            if (/(?:פתח\s*תקוו?ה|פ["״׳']ת)/.test(text)) return 'pt';
+            return null;
+        }
+
+        // ==========================================
+        // מנוע פענוח טקסט חופשי (תומך בכותרות 2011 / 2010 / פתח תקווה)
+        // ==========================================
+        function parseAndBuild(append = false) {
+            const rawText = document.getElementById('raw-text-input').value.trim();
+            if (!rawText) {
+                showToast('אנא הדביקי טקסט עם מועדי אימונים לפני הפענוח.', 'warning');
+                return;
+            }
+
+            const lines = rawText.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
+            const parsedSessions = [];
+            let currentDay = null;
+            let activeCohort = null;
+
+            const firstLineHasTime = /\b([01]?\d|2[0-3]):[0-5]\d\b/.test(lines[0]);
+            const firstLineHasCohort = Boolean(detectGroupCohort(lines[0]));
+            if (!firstLineHasTime && !firstLineHasCohort && lines[0].includes('שבוע')) {
+                appState.weekTitle = lines[0].replace(/[:*]/g, '').trim();
+                document.getElementById('week-title-input').value = appState.weekTitle;
+            }
+
+            for (let line of lines) {
+                let cleanLine = line.replace(/[*_~•▪▫]/g, ' ').replace(/\s+/g, ' ').trim();
+
+                const parsedTime = extractTimeFromLine(cleanLine);
+                const startTime = parsedTime ? parsedTime.startTime : null;
+                const endTime = parsedTime ? parsedTime.endTime : null;
+                const matchedTimeStr = parsedTime ? parsedTime.matchedTimeStr : '';
+
+                const lineCohort = detectGroupCohort(cleanLine);
+
+                const detectedDay = extractDayOfWeek(cleanLine);
+                if (detectedDay !== null) {
+                    currentDay = detectedDay;
+                }
+
+                // זיהוי שורת כותרת של שנתון / קבוצה (כמו "2011", "2010" או "פתח תקווה") ללא שעה
+                if (!startTime && lineCohort) {
+                    activeCohort = lineCohort;
+                    continue;
+                }
+
+                if (!startTime) {
+                    continue;
+                }
+
+                const dayToUse = detectedDay !== null ? detectedDay : (currentDay !== null ? currentDay : 0);
+                const cohortToUse = lineCohort || activeCohort || 'general';
+
+                // זיהוי סוג פעילות (כולל אימון כושר)
+                let activityType = 'אימון';
+                if (/כושר/.test(cleanLine)) {
+                    activityType = 'אימון כושר';
+                } else if (/משחק|ליגה|גביע|ידידות/.test(cleanLine)) {
+                    activityType = 'משחק';
+                } else if (/טורניר/.test(cleanLine)) {
+                    activityType = 'טורניר';
+                }
+
+                // חילוץ מיקום משארית הטקסט
+                let locationText = cleanLine;
+                if (matchedTimeStr) {
+                    locationText = locationText.replace(matchedTimeStr, ' ');
+                }
+                locationText = locationText
+                    .replace(/יום\s+(ראשון|שני|שלישי|רביעי|חמישי|שישי|שבת)/g, ' ')
+                    .replace(/\b(ראשון|שני|שלישי|רביעי|חמישי|שישי|שבת)\b/g, ' ')
+                    .replace(/יום\s+[א-ש]['׳"]/g, ' ')
+                    .replace(/\b(שנתון|קבוצת|קבוצה)?\s*201[01]\b/g, ' ')
+                    .replace(/(?:פתח\s*תקוו?ה|פ["״׳']ת)/g, ' ')
+                    .replace(/אימון\s*כושר|כושר|אימון|משחק\s*ליגה|משחק|טורניר/g, ' ')
+                    .replace(/\b(בשעה|שעה|במגרש|מגרש|אצטדיון|ב-)\b/g, (match) => match === 'מגרש' || match === 'אצטדיון' ? match : ' ')
+                    .replace(/\b\d{1,2}[./]\d{1,2}(?:[./]\d{2,4})?\b/g, ' ')
+                    .replace(/[-–—:|,]/g, ' ')
+                    .replace(/\s+/g, ' ')
+                    .trim();
+
+                if (!locationText) {
+                    locationText = cohortToUse === 'pt' ? 'פתח תקווה' : 'מגרש אימונים';
+                }
+
+                parsedSessions.push({
+                    id: 'sess_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
+                    day: dayToUse,
+                    startTime,
+                    endTime,
+                    cohort: cohortToUse,
+                    location: locationText,
+                    type: activityType,
+                    note: ''
+                });
+            }
+
+            if (parsedSessions.length === 0) {
+                showToast('לא זוהו שעות אימון בטקסט. ודאי שיש שעות כמו 17:30 או 16.', 'warning');
+                return;
+            }
+
+            if (append) {
+                appState.sessions = [...appState.sessions, ...parsedSessions];
+            } else {
+                appState.sessions = parsedSessions;
+            }
+
+            saveScheduleToCloud();
+            renderAll();
+            showToast(`עודכן בהצלחה! (${parsedSessions.length} מועדים נשמרו בענן)`, 'success');
+        }
+<!-- ... existing code ... -->
+        function loadSampleText() {
+            const sample = `לו"ז אימונים שבועי
+2011
+יום ראשון 17:30 מגרש סינטטי
+יום שלישי 18:00 אימון כושר אצטדיון עירוני
+
+2010
+יום שני 19:00 מגרש סינטטי
+יום רביעי 18:30 אצטדיון עירוני
+
+פתח תקווה
+יום חמישי 16:30 מגרש פתח תקווה`;
+            document.getElementById('raw-text-input').value = sample;
+            showToast('נטענה דוגמה! לחצי על "עדכן לוח שבועי" לצפייה.', 'info');
+        }
+<!-- ... existing code ... -->
+        function getCohortTheme(cohort) {
+            if (cohort === '2010') {
+                return {
+                    cardBg: 'bg-blue-50/75 hover:bg-blue-50',
+                    border: 'border-blue-200 border-r-4 border-r-blue-600',
+                    badgeBg: 'bg-blue-600 text-white',
+                    badgeLabel: 'שנתון 2010',
+                    emoji: '🔵',
+                    accentText: 'text-blue-950',
+                    subText: 'text-blue-800'
+                };
+            }
+            if (cohort === '2011') {
+                return {
+                    cardBg: 'bg-orange-50/80 hover:bg-orange-50',
+                    border: 'border-orange-200 border-r-4 border-r-orange-500',
+                    badgeBg: 'bg-orange-500 text-white',
+                    badgeLabel: 'שנתון 2011',
+                    emoji: '🟠',
+                    accentText: 'text-orange-950',
+                    subText: 'text-orange-800'
+                };
+            }
+            if (cohort === 'pt') {
+                return {
+                    cardBg: 'bg-purple-50/80 hover:bg-purple-50',
+                    border: 'border-purple-200 border-r-4 border-r-purple-600',
+                    badgeBg: 'bg-purple-600 text-white',
+                    badgeLabel: 'פתח תקווה',
+                    emoji: '🟣',
+                    accentText: 'text-purple-950',
+                    subText: 'text-purple-800'
+                };
+            }
+            return {
+                cardBg: 'bg-slate-50 hover:bg-slate-100/80',
+                border: 'border-slate-200 border-r-4 border-r-slate-400',
+                badgeBg: 'bg-slate-600 text-white',
+                badgeLabel: 'כללי',
+                emoji: '⚪',
+                accentText: 'text-slate-900',
+                subText: 'text-slate-700'
+            };
+        }
+
+        function cycleCohort(sessionId) {
+            if (appState.isSharedView) return;
+            const session = appState.sessions.find(s => s.id === sessionId);
+            if (!session) return;
+            const order = ['2010', '2011', 'pt', 'general'];
+            const nextIdx = (order.indexOf(session.cohort) + 1) % order.length;
+            session.cohort = order[nextIdx];
+            saveScheduleToCloud();
+            renderAll();
+        }
+<!-- ... existing code ... -->
+        function updateFilterCounts() {
+            const allCount = appState.sessions.length;
+            const count2010 = appState.sessions.filter(s => s.cohort === '2010').length;
+            const count2011 = appState.sessions.filter(s => s.cohort === '2011').length;
+            const countPt = appState.sessions.filter(s => s.cohort === 'pt').length;
+
+            document.getElementById('count-all').textContent = allCount;
+            document.getElementById('count-2010').textContent = count2010;
+            document.getElementById('count-2011').textContent = count2011;
+            const ptEl = document.getElementById('count-pt');
+            if (ptEl) ptEl.textContent = countPt;
+        }
+<!-- ... existing code ... -->
+        function createSessionCardHTML(session, showDayBadge = false) {
+            const theme = getCohortTheme(session.cohort);
+            const arrivalOffset = getArrivalOffsetMinutes(session.type, session.location, session.note);
+            const arrivalTime = calculateArrivalTime(session.startTime, session.type, session.location, session.note);
+            const arrivalLabelText = arrivalOffset === 15 ? 'הגעה (רבע שעה לפני):' : 'הגעה (חצי שעה לפני):';
+            const dayName = DAYS_HEB.find(d => d.index === session.day)?.name || '';
+            const controlsClass = appState.isEditorVisible ? '' : 'hidden';
+
+            return `
+                <div class="training-card rounded-xl p-3 border ${theme.border} ${theme.cardBg} shadow-2xs flex flex-col justify-between gap-2.5 relative group">
+                    <!-- שורה עליונה: תגית שנתון + כפתורי עריכה -->
+                    <div class="flex items-center justify-between gap-1">
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                            ${showDayBadge ? `<span class="text-[11px] font-extrabold px-2 py-0.5 rounded-md bg-emerald-700 text-white">יום ${dayName}</span>` : ''}
+                            <button type="button" onclick="cycleCohort('${session.id}')" title="לחצי להחלפת שנתון"
+                                class="text-[11px] font-extrabold px-2 py-0.5 rounded-md ${theme.badgeBg} shadow-2xs transition cursor-pointer">
+                                ${theme.badgeLabel}
+                            </button>
+                        </div>
+
+                        <div class="flex items-center gap-1 ${controlsClass} no-print">
+                            <button onclick="openEditModal('${session.id}')" title="ערוך אימון" class="p-1 rounded-md text-slate-500 hover:text-slate-900 hover:bg-white/80 transition">
+                                <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                            </button>
+                            <button onclick="deleteSession('${session.id}')" title="מחק אימון" class="p-1 rounded-md text-slate-400 hover:text-rose-600 hover:bg-white/80 transition">
+                                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- שעות אימון -->
+                    <div>
+                        <div class="flex items-baseline gap-1.5">
+                            <span class="text-base font-extrabold ${theme.accentText} tracking-tight">${session.startTime}</span>
+                            <span class="text-xs font-medium text-slate-500">- ${session.endTime}</span>
+                        </div>
+                        <div class="text-[11px] font-semibold ${theme.subText} mt-0.5">${escapeHtml(session.type || 'אימון')}</div>
+                    </div>
+
+                    <!-- תיבת שעת הגעה מומלצת -->
+                    <div class="bg-amber-100/90 border border-amber-300/80 rounded-lg px-2.5 py-1.5 flex items-center justify-between">
+                        <span class="text-[11px] font-bold text-amber-950 flex items-center gap-1">
+                            <span>⏰</span>
+                            <span>${arrivalLabelText}</span>
+                        </span>
+                        <span class="text-xs font-extrabold text-amber-950 bg-white/80 px-1.5 py-0.5 rounded-xs border border-amber-200">${arrivalTime}</span>
+                    </div>
+
+                    <!-- מיקום והערות -->
+                    <div class="space-y-1 pt-0.5 border-t border-slate-200/60">
+                        <div class="flex items-start gap-1.5 text-xs font-semibold text-slate-800">
+                            <i data-lucide="map-pin" class="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5"></i>
+                            <span class="leading-snug">${escapeHtml(session.location)}</span>
+                        </div>
+                        ${session.note ? `
+                        <div class="flex items-start gap-1.5 text-[11px] font-medium text-slate-600 bg-white/70 px-2 py-1 rounded-md">
+                            <i data-lucide="car" class="w-3.5 h-3.5 text-slate-500 shrink-0 mt-0.5"></i>
+                            <span>${escapeHtml(session.note)}</span>
+                        </div>` : ''}
+                    </div>
+                </div>
+            `;
+        }
+<!-- ... existing code ... -->
+        function updateModalArrivalPreview() {
+            const startVal = document.getElementById('edit-start').value;
+            const typeVal = document.getElementById('edit-type')?.value || '';
+            const locationVal = document.getElementById('edit-location')?.value || '';
+            const noteVal = document.getElementById('edit-note')?.value || '';
+            const offset = getArrivalOffsetMinutes(typeVal, locationVal, noteVal);
+            const labelEl = document.getElementById('modal-arrival-label');
+            if (labelEl) {
+                labelEl.textContent = offset === 15
+                    ? '⏰ שעת הגעה מומלצת (רבע שעה לפני אימון כושר):'
+                    : '⏰ שעת הגעה מומלצת (חצי שעה לפני):';
+            }
+            if (startVal) {
+                document.getElementById('modal-arrival-preview').textContent = calculateArrivalTime(startVal, typeVal, locationVal, noteVal);
+            } else {
+                document.getElementById('modal-arrival-preview').textContent = '--:--';
+            }
+        }
+<!-- ... existing code ... -->
+        function copyWhatsAppSummary() {
+            if (appState.sessions.length === 0) {
+                showToast('אין אימונים בלוח כרגע לשליחה.', 'warning');
+                return;
+            }
+
+            let lines = [`⚽ *${appState.weekTitle}* ⚽`, ''];
+
+            DAYS_HEB.forEach(day => {
+                const daySessions = appState.sessions
+                    .filter(s => s.day === day.index)
+                    .sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
+
+                if (daySessions.length > 0) {
+                    lines.push(`*יום ${day.name}:*`);
+                    daySessions.forEach(s => {
+                        const theme = getCohortTheme(s.cohort);
+                        const arrival = calculateArrivalTime(s.startTime, s.type, s.location, s.note);
+                        const notePart = s.note ? ` (${s.note})` : '';
+                        lines.push(`${theme.emoji} *${theme.badgeLabel}* | ${s.type || 'אימון'} ${s.startTime}-${s.endTime} (הגעה ${arrival}) | 📍 ${s.location}${notePart}`);
+                    });
+                    lines.push('');
+                }
+            });
+
+            const summaryText = lines.join('\n').trim();
+            copyTextToClipboard(summaryText, 'סיכום האימונים הועתק! אפשר להדביק עכשיו בוואטסאפ המשפחתי.');
+        }
+<!-- ... existing code ... -->
